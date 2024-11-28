@@ -1,0 +1,576 @@
+{
+  "show_diagram": false,
+  "nodes": {
+    "root": {
+      "train_eeg": {
+        "module": "models.node.generator.file",
+        "type": "CSVFileArray",
+        "buffer_options": {
+          "clear_output_buffer_on_generate": true
+        },
+        "file_path": [
+          "D:\\dataset\\train\\subj1_series2_data.csv",
+          "D:\\dataset\\train\\subj1_series3_data.csv",
+          "D:\\dataset\\train\\subj1_series4_data.csv",
+          "D:\\dataset\\train\\subj1_series5_data.csv",
+          "D:\\dataset\\train\\subj1_series6_data.csv",
+          "D:\\dataset\\train\\subj1_series7_data.csv",
+          "D:\\dataset\\train\\subj1_series8_data.csv"
+        ],
+        "data_type": "float",
+        "sampling_frequency": 500,
+        "channel_column_names": [
+          "Fp1",
+          "Fp2",
+          "F7",
+          "F3",
+          "Fz",
+          "F4",
+          "F8",
+          "FC5",
+          "FC1",
+          "FC2",
+          "FC6",
+          "T7",
+          "C3",
+          "Cz",
+          "C4",
+          "T8",
+          "TP9",
+          "CP5",
+          "CP1",
+          "CP2",
+          "CP6",
+          "TP10",
+          "P7",
+          "P3",
+          "Pz",
+          "P4",
+          "P8",
+          "PO9",
+          "O1",
+          "Oz",
+          "O2",
+          "PO10"
+        ],
+        "outputs": {
+          "main": [
+            {
+              "node": "bandpass",
+              "input": "main"
+            }
+          ],
+          "timestamp": []
+        }
+      },
+      "train_labels": {
+        "module": "models.node.generator.file",
+        "type": "CSVFileArray",
+        "buffer_options": {
+          "clear_output_buffer_on_generate": true
+        },
+        "file_path": [
+          "D:\\dataset\\train\\subj1_series2_events.csv",
+          "D:\\dataset\\train\\subj1_series3_events.csv",
+          "D:\\dataset\\train\\subj1_series4_events.csv",
+          "D:\\dataset\\train\\subj1_series5_events.csv",
+          "D:\\dataset\\train\\subj1_series6_events.csv",
+          "D:\\dataset\\train\\subj1_series7_events.csv",
+          "D:\\dataset\\train\\subj1_series8_events.csv"
+        ],
+        "data_type": "float",
+        "sampling_frequency": 500,
+        "channel_column_names": [
+          "HandStart",
+          "FirstDigitTouch",
+          "BothStartLoadPhase",
+          "LiftOff",
+          "Replace",
+          "BothReleased"
+        ],
+        "outputs": {
+          "main": [
+            {
+              "node": "label_encoder",
+              "input": "main"
+            }
+          ],
+          "timestamp": []
+        }
+      },
+      "test_eeg": {
+        "module": "models.node.generator.file",
+        "type": "CSVFile",
+        "buffer_options": {
+          "clear_output_buffer_on_generate": true
+        },
+        "file_path": "D:\\dataset\\train\\subj1_series1_data.csv",
+        "data_type": "float",
+        "sampling_frequency": 500,
+        "channel_column_names": [
+          "Fp1",
+          "Fp2",
+          "F7",
+          "F3",
+          "Fz",
+          "F4",
+          "F8",
+          "FC5",
+          "FC1",
+          "FC2",
+          "FC6",
+          "T7",
+          "C3",
+          "Cz",
+          "C4",
+          "T8",
+          "TP9",
+          "CP5",
+          "CP1",
+          "CP2",
+          "CP6",
+          "TP10",
+          "P7",
+          "P3",
+          "Pz",
+          "P4",
+          "P8",
+          "PO9",
+          "O1",
+          "Oz",
+          "O2",
+          "PO10"
+        ],
+        "outputs": {
+          "main": [
+            {
+              "node": "gate_eeg_wait_for_lda_trained",
+              "input": "signal"
+            }
+          ],
+          "timestamp": []
+        }
+      },
+      "test_labels": {
+        "module": "models.node.generator.file",
+        "type": "CSVFile",
+        "buffer_options": {
+          "clear_output_buffer_on_generate": true
+        },
+        "file_path": "D:\\dataset\\train\\subj1_series1_events.csv",
+        "data_type": "float",
+        "sampling_frequency": 500,
+        "channel_column_names": [
+          "HandStart",
+          "FirstDigitTouch",
+          "BothStartLoadPhase",
+          "LiftOff",
+          "Replace",
+          "BothReleased"
+        ],
+        "outputs": {
+          "main": [
+            {
+              "node": "roc_auc",
+              "input": "actual"
+            }
+          ],
+          "timestamp": []
+        }
+      }
+    },
+    "common": {
+      "gate_eeg_wait_for_lda_trained": {
+        "module": "models.node.gate",
+        "type": "DynamicGate",
+        "condition": "condition_data.get_data_count()>0",
+        "buffer_options": {
+          "clear_input_buffer_if_condition_not_met": false,
+          "clear_input_buffer_if_condition_met": true,
+          "clear_output_buffer_if_condition_not_met": true,
+          "clear_output_buffer_if_condition_met": false
+        },
+        "outputs": {
+          "main": [
+            {
+              "node": "bandpass_test",
+              "input": "main"
+            }
+          ]
+        }
+      },
+      "label_encoder": {
+        "module": "models.node.processing.encoder",
+        "type": "OneHotToSingle",
+        "buffer_options": {
+          "clear_output_buffer_on_data_input": false,
+          "clear_input_buffer_after_process": true,
+          "clear_output_buffer_after_process": true
+        },
+        "outputs": {
+          "main": [
+            {
+              "node": "lda",
+              "input": "label"
+            },
+            {
+              "node": "gate_to_segmentation_labels",
+              "input": "signal"
+            }
+          ]
+        }
+      },
+      "bandpass": {
+        "module": "models.node.processing.filter",
+        "type": "BandPass",
+        "buffer_options": {
+          "clear_output_buffer_on_data_input": true,
+          "clear_input_buffer_after_process": true,
+          "clear_output_buffer_after_process": true
+        },
+        "low_cut_frequency_hz": 8.0,
+        "high_cut_frequency_hz": 30.0,
+        "order": 4,
+        "outputs": {
+          "main": [
+            {
+              "node": "gate_to_csp",
+              "input": "signal"
+            },
+            {
+              "node": "gate_to_segmentation_eeg",
+              "input": "signal"
+            }
+          ]
+        }
+      },
+      "bandpass_test": {
+        "module": "models.node.processing.filter",
+        "type": "BandPass",
+        "buffer_options": {
+          "clear_output_buffer_on_data_input": true,
+          "clear_input_buffer_after_process": true,
+          "clear_output_buffer_after_process": true
+        },
+        "low_cut_frequency_hz": 8.0,
+        "high_cut_frequency_hz": 30.0,
+        "order": 4,
+        "outputs": {
+          "main": [
+            {
+              "node": "csp",
+              "input": "data"
+            },
+            {
+              "node": "filtered_csv",
+              "input": "main"
+            }
+          ]
+        }
+      },
+      "filtered_csv": {
+        "module": "models.node.output.file",
+        "enable_log": false,
+        "type": "CSVFile",
+        "file_path": "D:\\Projetos\\Desenvolvimento\\Mestrado\\OpenBCI_Python_Framework\\cues\\filtered_csv.csv",
+        "buffer_options": {
+          "print_buffer_size":false,
+          "clear_output_buffer_on_data_input": true,
+          "clear_input_buffer_after_process": true,
+          "clear_output_buffer_after_process": true
+        },
+        "outputs":{}
+      },
+      "gate_to_csp": {
+        "module": "models.node.gate",
+        "type": "DynamicGate",
+        "condition": "condition_data.get_data_count()>0",
+        "buffer_options": {
+          "clear_input_buffer_if_condition_not_met": false,
+          "clear_input_buffer_if_condition_met": true,
+          "clear_output_buffer_if_condition_not_met": true,
+          "clear_output_buffer_if_condition_met": true
+        },
+        "outputs": {
+          "main": [
+            {
+              "node": "gate_block_csp_training_after_lda",
+              "input": "signal"
+            }
+          ]
+        }
+      },
+      "gate_block_csp_training_after_lda": {
+        "module": "models.node.gate",
+        "type": "DynamicGate",
+        "condition": "condition_data.get_data_count()==0",
+        "buffer_options": {
+          "clear_input_buffer_if_condition_not_met": false,
+          "clear_input_buffer_if_condition_met": true,
+          "clear_output_buffer_if_condition_not_met": true,
+          "clear_output_buffer_if_condition_met": true
+        },
+        "outputs": {
+          "main": [
+            {
+              "node": "csp",
+              "input": "data"
+            }
+          ]
+        }
+      },
+      "gate_to_segmentation_eeg": {
+        "module": "models.node.gate",
+        "type": "DynamicGate",
+        "condition": "condition_data.get_data_count()==0",
+        "buffer_options": {
+          "clear_input_buffer_if_condition_not_met": false,
+          "clear_input_buffer_if_condition_met": true,
+          "clear_output_buffer_if_condition_not_met": true,
+          "clear_output_buffer_if_condition_met": true
+        },
+        "outputs": {
+          "main": [
+            {
+              "node": "segmentation_after",
+              "input": "data"
+            },
+            {
+              "node": "segmentation_before",
+              "input": "data"
+            }
+          ]
+        }
+      },
+      "gate_to_segmentation_labels": {
+        "module": "models.node.gate",
+        "type": "DynamicGate",
+        "condition": "condition_data.get_data_count()==0",
+        "buffer_options": {
+          "clear_input_buffer_if_condition_not_met": false,
+          "clear_input_buffer_if_condition_met": true,
+          "clear_output_buffer_if_condition_not_met": true,
+          "clear_output_buffer_if_condition_met": true
+        },
+        "outputs": {
+          "main": [
+            {
+              "node": "segmentation_after",
+              "input": "label"
+            },
+            {
+              "node": "segmentation_before",
+              "input": "label"
+            }
+          ]
+        }
+      },
+      "segmentation_after": {
+        "module": "models.node.processing.segmenter",
+        "type": "LabelBasedFixedWindowSegmenter",
+        "label_value": 1,
+        "filling_value": "zero",
+        "samples_after_label": 500,
+        "samples_before_label": 0,
+        "buffer_options": {
+          "clear_output_buffer_on_data_input": false,
+          "clear_input_buffer_after_process": true,
+          "clear_output_buffer_after_process": true
+        },
+        "outputs": {
+          "data": [
+            {
+              "node": "csp",
+              "input": "data"
+            }
+          ],
+          "label": [
+            {
+              "node": "csp",
+              "input": "label"
+            }
+          ]
+        }
+      },
+      "segmentation_before": {
+        "module": "models.node.processing.segmenter",
+        "type": "LabelBasedFixedWindowSegmenter",
+        "label_value": 1,
+        "filling_value": "zero",
+        "samples_after_label": 0,
+        "samples_before_label": 500,
+        "buffer_options": {
+          "clear_output_buffer_on_data_input": false,
+          "clear_input_buffer_after_process": true,
+          "clear_output_buffer_after_process": true
+        },
+        "outputs": {
+          "data": [
+            {
+              "node": "csp",
+              "input": "data"
+            }
+          ],
+          "label": [
+            {
+              "node": "csp",
+              "input": "label"
+            }
+          ]
+        }
+      },
+      "csp": {
+        "module": "models.node.processing.trainable.feature_extractor",
+        "type": "CSP",
+        "buffer_options": {
+          "clear_output_buffer_on_data_input": false,
+          "clear_input_buffer_after_process": true,
+          "clear_output_buffer_after_process": true,
+          "clear_input_buffer_after_training": true,
+          "process_input_buffer_after_training": false
+        },
+        "training_set_size": 250,
+        "number_of_components": 6,
+        "outputs": {
+          "main": [
+            {
+              "node": "smoothing",
+              "input": "main"
+            },
+            {
+              "node": "extracted_csv",
+              "input": "main"
+            }
+          ],
+          "training_finished": [
+            {
+              "node": "gate_to_csp",
+              "input": "condition"
+            }
+          ]
+        }
+      },
+      "extracted_csv": {
+        "module": "models.node.output.file",
+        "enable_log": false,
+        "type": "CSVFile",
+        "file_path": "D:\\Projetos\\Desenvolvimento\\Mestrado\\OpenBCI_Python_Framework\\cues\\extracted_csv.csv",
+        "buffer_options": {
+          "print_buffer_size":false,
+          "clear_output_buffer_on_data_input": true,
+          "clear_input_buffer_after_process": true,
+          "clear_output_buffer_after_process": true
+        },
+        "outputs":{}
+      },
+      "smoothing": {
+        "module": "models.node.processing",
+        "type": "Smoothing",
+        "window_type": "boxcar",
+        "window_size": 300,
+        "convolution_mode": "full",
+        "buffer_options": {
+          "clear_output_buffer_on_data_input": true,
+          "clear_input_buffer_after_process": true,
+          "clear_output_buffer_after_process": true
+        },
+        "outputs": {
+          "main": [
+            {
+              "node": "lda",
+              "input": "data"
+            },
+            {
+              "node": "smoothed_csv",
+              "input": "main"
+            }
+          ]
+        }
+      },
+      "smoothed_csv": {
+        "module": "models.node.output.file",
+        "enable_log": false,
+        "type": "CSVFile",
+        "file_path": "D:\\Projetos\\Desenvolvimento\\Mestrado\\OpenBCI_Python_Framework\\cues\\smoothed_csv.csv",
+        "buffer_options": {
+          "print_buffer_size":false,
+          "clear_output_buffer_on_data_input": true,
+          "clear_input_buffer_after_process": true,
+          "clear_output_buffer_after_process": true
+        },
+        "outputs":{}
+      },
+      "lda": {
+        "module": "models.node.processing.trainable.classifier",
+        "type": "LDA",
+        "buffer_options": {
+          "clear_output_buffer_on_data_input": true,
+          "clear_input_buffer_after_process": true,
+          "clear_output_buffer_after_process": true,
+          "clear_input_buffer_after_training": true,
+          "process_input_buffer_after_training": false
+        },
+        "training_set_size": 2,
+        "save_after_training": true,
+        "load_trained": false,
+        "save_file_path": "D:\\Projetos\\Desenvolvimento\\Mestrado\\OpenBCI_Python_Framework\\cues\\LDA.sav",
+        "load_file_path": "D:\\Projetos\\Desenvolvimento\\Mestrado\\OpenBCI_Python_Framework\\cues\\LDA_subj1.sav",
+        "outputs": {
+          "main": [],
+          "probability": [
+            {
+              "node": "roc_auc",
+              "input": "predicted"
+            }
+          ],
+          "training_finished": [
+            {
+              "node": "gate_eeg_wait_for_lda_trained",
+              "input": "condition"
+            },
+            {
+              "node": "gate_to_segmentation_eeg",
+              "input": "condition"
+            },
+            {
+              "node": "gate_to_segmentation_labels",
+              "input": "condition"
+            },
+            {
+              "node": "gate_block_csp_training_after_lda",
+              "input": "condition"
+            }
+          ]
+        }
+      },
+      "roc_auc": {
+        "module": "models.node.processing.metric",
+        "type": "ROCAUC",
+        "buffer_options": {
+          "clear_output_buffer_on_data_input": true,
+          "clear_input_buffer_after_process": true,
+          "clear_output_buffer_after_process": true
+        },
+        "outputs": {
+          "main": [
+            {
+              "node": "console_out",
+              "input": "main"
+            }
+          ]
+        }
+      },
+      "console_out": {
+        "module": "models.node.output.display",
+        "type": "Console",
+        "prefix": "ROC AUC Score = ",
+        "buffer_options": {
+          "clear_output_buffer_on_data_input": true,
+          "clear_input_buffer_after_process": true,
+          "clear_output_buffer_after_process": true
+        },
+        "outputs": {}
+      }
+    }
+  }
+}
